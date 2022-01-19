@@ -8,20 +8,35 @@ let url =
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [wiki, setWiki] = useState('');
   const [articles, setArticles] = useState([]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(false);
 
-    if (!wiki) return;
+    if (!wiki) {
+      setLoading(false);
+    }
 
     axios(`${url}${wiki}`)
       .then((response) => {
         const data = response.data.query.search;
+        if (data.length === 0) {
+          setLoading(false);
+          setError(true);
+          return;
+        }
         setArticles(data);
+        setLoading(false);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+        setError(true);
+      });
   };
 
   return (
@@ -31,6 +46,13 @@ function App() {
         <h1>Wikipedia Viewer</h1>
       </header>
       <form onSubmit={handleSubmit}>
+        <a
+          href='https://en.wikipedia.org/wiki/Special:Random'
+          target='_blank'
+          rel='noreferrer'
+        >
+          <button type='button'>random article</button>
+        </a>
         <input
           type='text'
           value={wiki}
@@ -39,29 +61,37 @@ function App() {
         />
       </form>
       <section>
-        {articles.map((item) => {
-          let { snippet, title, pageid, size, wordcount, timestamp } = item;
-          timestamp = timestamp.split('T')[0];
-          size = (size / 1000).toFixed(0);
-          const url = `https://en.wikipedia.org/?curid=${pageid}`;
+        {error ? (
+          <h1 className='fallback'>There was an error, try again</h1>
+        ) : loading ? (
+          <h1 className='fallback'>Loading ...</h1>
+        ) : (
+          <div className='articles-container'>
+            {articles.map((item) => {
+              let { snippet, title, pageid, size, wordcount, timestamp } = item;
+              timestamp = timestamp.split('T')[0];
+              size = (size / 1000).toFixed(0);
+              const url = `https://en.wikipedia.org/?curid=${pageid}`;
 
-          return (
-            <article key={pageid}>
-              <h3 className='article-title'>
-                <a href={url} target='_blank' rel='noreferrer'>
-                  {title}
-                </a>
-              </h3>
-              <p
-                className='article-content'
-                dangerouslySetInnerHTML={{ __html: snippet }}
-              ></p>
-              <span className='article-footer'>
-                {size}Kio ({wordcount} words) - {timestamp}
-              </span>
-            </article>
-          );
-        })}
+              return (
+                <article key={pageid}>
+                  <h3 className='article-title'>
+                    <a href={url} target='_blank' rel='noreferrer'>
+                      {title}
+                    </a>
+                  </h3>
+                  <p
+                    className='article-content'
+                    dangerouslySetInnerHTML={{ __html: snippet }}
+                  ></p>
+                  <span className='article-footer'>
+                    {size}Kio ({wordcount} words) - {timestamp}
+                  </span>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </main>
   );
