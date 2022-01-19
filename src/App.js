@@ -35,6 +35,7 @@ function App() {
           type='text'
           value={wiki}
           onChange={(e) => setWiki(e.target.value)}
+          placeholder='Search in Wikipedia'
         />
       </form>
       <section>
@@ -42,8 +43,8 @@ function App() {
           let { snippet, title, pageid, size, wordcount, timestamp } = item;
           timestamp = timestamp.split('T')[0];
           size = (size / 1000).toFixed(0);
-
           const url = `https://en.wikipedia.org/?curid=${pageid}`;
+
           return (
             <article key={pageid}>
               <h3 className='article-title'>
