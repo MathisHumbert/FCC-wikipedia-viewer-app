@@ -37,11 +37,31 @@ function App() {
           onChange={(e) => setWiki(e.target.value)}
         />
       </form>
-      <article>
-        {articles.map((item, index) => {
-          console.log(item);
+      <section>
+        {articles.map((item) => {
+          let { snippet, title, pageid, size, wordcount, timestamp } = item;
+          timestamp = timestamp.split('T')[0];
+          size = (size / 1000).toFixed(0);
+
+          const url = `https://en.wikipedia.org/?curid=${pageid}`;
+          return (
+            <article key={pageid}>
+              <h3 className='article-title'>
+                <a href={url} target='_blank' rel='noreferrer'>
+                  {title}
+                </a>
+              </h3>
+              <p
+                className='article-content'
+                dangerouslySetInnerHTML={{ __html: snippet }}
+              ></p>
+              <span className='article-footer'>
+                {size}Kio ({wordcount} words) - {timestamp}
+              </span>
+            </article>
+          );
         })}
-      </article>
+      </section>
     </main>
   );
 }
